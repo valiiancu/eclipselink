@@ -732,6 +732,17 @@ public class DirectCollectionMapping extends CollectionMapping implements Relati
             }
         }
 
+        //Bug 465497- if an element is duplicate in oldList, and in newList the last of its values will be deleted,
+        // at this point the mapped to... set will be null, not according to the docs from this method's start
+        // leading to deletion of all the equal values remaining in the list.
+        // For all these values, set the mapped set to be a dummySet
+        HashSet<Object> newSet = new HashSet<Object>(newList);
+        for (Map.Entry<Object, Set[]> e : changedIndexes.entrySet()) {
+			if(newSet.contains(e.getKey()) && e.getValue()[1] == null) {
+				//the deleted value still exists someplace in the new collection, mark it as such ..
+				e.getValue()[1] = dummySet;
+			}
+		}
         ((DirectCollectionChangeRecord)changeRecord).setChangedIndexes(changedIndexes);
         ((DirectCollectionChangeRecord)changeRecord).setOldSize(nOldSize);
         ((DirectCollectionChangeRecord)changeRecord).setNewSize(nNewSize);
