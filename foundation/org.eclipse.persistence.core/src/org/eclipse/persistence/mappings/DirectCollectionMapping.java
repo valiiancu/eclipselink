@@ -22,6 +22,9 @@
  *     06/03/2013-2.5.1 Guy Pelletier    
  *       - 402380: 3 jpa21/advanced tests failed on server with 
  *         "java.lang.NoClassDefFoundError: org/eclipse/persistence/testing/models/jpa21/advanced/enums/Gender"  
+ *     04/26/2015 - 2.6 Valentin Iancu
+ *       - 465497 - Data lost after update on primitive type @ElementCollection with @OrderColumn attribute
+ *            Fixed empty vs. null return value for duplicate / updated last values in the element collection
  ******************************************************************************/  
 package org.eclipse.persistence.mappings;
 
@@ -661,7 +664,7 @@ public class DirectCollectionMapping extends CollectionMapping implements Relati
         // That helps during deletion - if we know there is no remaining duplicates for the object to be removed
         // we can delete it without checking its index (which allows delete several duplicates in one sql).
         // Map entry sets with no new and no old indexes removed.
-        HashMap changedIndexes = new HashMap(Math.max(oldList.size(), newList.size()));
+        HashMap<Object, Set[]> changedIndexes = new HashMap<>(Math.max(oldList.size(), newList.size()));
         
         int nOldSize = 0;
         // for each object in oldList insert all its indexes in oldList into the old indexes set corresponding to each object.
@@ -669,7 +672,7 @@ public class DirectCollectionMapping extends CollectionMapping implements Relati
             nOldSize = oldList.size();
             for(int i=0; i < nOldSize; i++) {
                 Object obj = oldList.get(i);    
-                Set[] indexes = (Set[])changedIndexes.get(obj);
+                Set[] indexes = changedIndexes.get(obj);
                 if (indexes == null) {
                     // the first index found for the object.
                     indexes = new Set[]{new HashSet(), null};
@@ -693,7 +696,7 @@ public class DirectCollectionMapping extends CollectionMapping implements Relati
             nNewSize = newList.size();
             for(int i=0; i < nNewSize; i++) {
                 Object obj = newList.get(i);
-                Set[] indexes = (Set[])changedIndexes.get(obj);
+                Set[] indexes = changedIndexes.get(obj);
                 if (indexes == null) {
                     // the first index found for the object - or was found and removed before.
                     if(removedFromChangedIndexes.contains(obj)) {
@@ -730,6 +733,17 @@ public class DirectCollectionMapping extends CollectionMapping implements Relati
             }
         }
 
+        //Bug 465497- if an element is duplicate in oldList, and in newList the last of its values will be deleted,
+        // at this point the mapped to... set will be null, not according to the docs from this method's start
+        // leading to deletion of all the equal values remaining in the list.
+        // For all these values, set the mapped set to be a dummySet
+        HashSet<Object> newSet = new HashSet<Object>(newList);
+        for (Map.Entry<Object, Set[]> e : changedIndexes.entrySet()) {
+			if(newSet.contains(e.getKey()) && e.getValue()[1] == null) {
+				//the deleted value still exists someplace in the new collection, mark it as such ..
+				e.getValue()[1] = dummySet;
+			}
+		}
         ((DirectCollectionChangeRecord)changeRecord).setChangedIndexes(changedIndexes);
         ((DirectCollectionChangeRecord)changeRecord).setOldSize(nOldSize);
         ((DirectCollectionChangeRecord)changeRecord).setNewSize(nNewSize);
