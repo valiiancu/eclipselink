@@ -59,3 +59,21 @@ the terms of [Eclipse Contributor Agreement](http://www.eclipse.org/legal/ECA.ph
 Hint: If it's possible, it helps if some test reproducer is attached to the new bug.
 If it's not possible, attached entities and persistence.xml file should help too for JPA related bugs.
 For MOXy, entities and XML or JSON resources/files are welcome.
+
+
+
+Building
+========================================
+Maven java 11 "standard". One test project with issues.
+
+
+Tools
+* c:\tools\apache-maven-3.8.6 
+* c:\Program Files\Eclipse Adoptium\jdk-11.0.17.8-hotspot
+
+Run these in the eclipselink folder (change date & hash)
+
+```
+SET JAVA_HOME=c:\Program Files\Eclipse Adoptium\jdk-8.0.352.8-hotspot
+mvn install -Dbuild.qualifier=3.0.4-MDSY -Dbuild.type=RELEASE -pl "!org.eclipse.persistence:org.eclipse.persistence.jpa.jse.test"
+```
