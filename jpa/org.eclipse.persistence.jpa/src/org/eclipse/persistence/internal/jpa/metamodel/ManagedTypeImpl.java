@@ -50,6 +50,9 @@
  *       - see design issue #25
  *       http://wiki.eclipse.org/EclipseLink/Development/JPA_2.0/metamodel_api#DI_25:_20090616:_Inherited_parameterized_generics_for_Element_Collections_.28Basic.29
  *       
+ *     06/22/2017- 2.6 Valentin Iancu - 463737 (while testing Concurrent Exception Initializer)
+ *       Ensure no race condition occurs if two threads are calling initialize - one will enter initialize and put in this.members, while the other
+ *         will request from the members various attributes 
  ******************************************************************************/
 package org.eclipse.persistence.internal.jpa.metamodel;
 
@@ -1111,7 +1114,7 @@ public abstract class ManagedTypeImpl<X> extends TypeImpl<X> implements ManagedT
      * Initialization should occur after all types in the metamodel have been created already.
      * 
      */
-    protected void initialize() { // Future: Check all is*Policy() calls
+    protected synchronized void initialize() { // Future: Check all is*Policy() calls
         /*
          * Design Issue 37 and 58:
          * http://wiki.eclipse.org/EclipseLink/Development/JPA_2.0/metamodel_api#DI_37:_20090708:_CollectionAttribute_acts_as_a_peer_of_Map.2C_Set.2C_List_but_should_be_a_super_interface

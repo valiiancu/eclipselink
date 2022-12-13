@@ -32,6 +32,8 @@
  *       - 397772: JPA 2.1 Entity Graph Support
  *     06/25/2014-2.5.2 Rick Curtis 
  *       - 438177: Support M2M map with jointable
+ *     06/23/2017- 2.6 Valentin Iancu
+ *       - 463737(ConcurrentModificationException part or 461873): Clone referencingClasses (from server session to client session) & use a method - addDescriptor 
  ******************************************************************************/  
 package org.eclipse.persistence.descriptors;
 
@@ -1270,7 +1272,7 @@ public class ClassDescriptor extends CoreDescriptor<AttributeGroup, DescriptorEv
             ;
         }
         
-
+        clonedDescriptor.referencingClasses = new HashSet<ClassDescriptor>(referencingClasses);
         Vector mappingsVector = NonSynchronizedVector.newInstance();
 
         // All the mappings
@@ -3187,14 +3189,14 @@ public class ClassDescriptor extends CoreDescriptor<AttributeGroup, DescriptorEv
                 }
                 ClassDescriptor referencedDescriptor = ((ForeignReferenceMapping)mapping).getReferenceDescriptor();
                 if (referencedDescriptor!= null){
-                    referencedDescriptor.referencingClasses.add(this);
+                    referencedDescriptor.addDescriptor(this);
                 }
             }
 
             if (mapping.isAggregateObjectMapping()) {
                 ClassDescriptor referencedDescriptor = ((AggregateObjectMapping)mapping).getReferenceDescriptor();
                 if (referencedDescriptor!= null){
-                    referencedDescriptor.referencingClasses.add(this);
+                    referencedDescriptor.addDescriptor(this);
                 }
             }
             // If this descriptor uses a cascaded version optimistic locking 
@@ -6889,4 +6891,8 @@ public class ClassDescriptor extends CoreDescriptor<AttributeGroup, DescriptorEv
     public Map<String, AttributeGroup> getAttributeGroups() {
         return super.getAttributeGroups();
     }
+    private void addDescriptor(ClassDescriptor cd) {
+    	referencingClasses.add(cd);
+    }
+	
 }
