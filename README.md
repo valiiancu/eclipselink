@@ -5,3 +5,20 @@ The EclipseLink project's goal is to provide a complete persistence framework th
 
 
 http://eclipse.org/eclipselink
+
+
+
+Building
+========================================
+
+Tools
+* c:\tools\apache-ant-1.9.16 
+* c:\tools\apache-maven-3.8.6 
+* c:\Program Files\Eclipse Adoptium\jdk-8.0.352.8-hotspot
+
+Run these in the eclipselink folder (change date & hash)
+```
+SET M2_HOME=c:\tools\apache-maven-3.8.6
+SET JAVA_HOME=c:\Program Files\Eclipse Adoptium\jdk-8.0.352.8-hotspot
+c:\tools\apache-ant-1.9.16\bin\ant -f antbuild.xml -Dtype=r -Dversion=1.6.6mdsy -Ddate=20221212 -Dhash=77f2de35 clean,build-eclipselink-jar
+```
