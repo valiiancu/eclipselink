@@ -13,3 +13,4 @@ test_*.properties
 /eclipselink.jar
 /plugins/
 /jpa/plugins/
+pom.xml.releaseBackup
