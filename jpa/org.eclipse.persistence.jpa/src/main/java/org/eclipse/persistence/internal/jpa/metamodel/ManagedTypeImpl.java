@@ -1132,7 +1132,7 @@ public abstract class ManagedTypeImpl<X> extends TypeImpl<X> implements ManagedT
      * Initialization should occur after all types in the metamodel have been created already.
      *
      */
-    protected void initialize() { // Future: Check all is*Policy() calls
+    protected synchronized void initialize() { // Future: Check all is*Policy() calls
         /*
          * Design Issue 37 and 58:
          * http://wiki.eclipse.org/EclipseLink/Development/JPA_2.0/metamodel_api#DI_37:_20090708:_CollectionAttribute_acts_as_a_peer_of_Map.2C_Set.2C_List_but_should_be_a_super_interface
