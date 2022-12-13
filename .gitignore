@@ -8,3 +8,8 @@ target/
 .idea/
 test_*.properties
 .sonar
+/build/
+/buildsystem/
+/eclipselink.jar
+/plugins/
+/jpa/plugins/
