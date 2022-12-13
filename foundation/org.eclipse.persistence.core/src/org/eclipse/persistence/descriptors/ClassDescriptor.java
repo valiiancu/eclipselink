@@ -38,6 +38,8 @@
 //       - 438177: Support M2M map with jointable
 //     08/12/2015-2.6 Mythily Parthasarathy
 //       - 474752: Address NPE for Embeddable with 1-M association
+//     06/23/2017- 2.6 Valentin Iancu
+//       - 463737(ConcurrentModificationException part or 461873): Clone referencingClasses (from server session to client session) & use a method - addDescriptor 
 //     07/09/2018-2.6 Jody Grassel
 //       - MapsID processing sets up to fail validation
 
@@ -1333,7 +1335,7 @@ public class ClassDescriptor extends CoreDescriptor<AttributeGroup, DescriptorEv
         } catch (Exception exception) {
             throw new AssertionError(exception);
         }
-
+        clonedDescriptor.referencingClasses = new HashSet<ClassDescriptor>(referencingClasses);
         Vector mappingsVector = NonSynchronizedVector.newInstance();
 
         // All the mappings
@@ -3266,14 +3268,14 @@ public class ClassDescriptor extends CoreDescriptor<AttributeGroup, DescriptorEv
                 }
                 ClassDescriptor referencedDescriptor = ((ForeignReferenceMapping)mapping).getReferenceDescriptor();
                 if (referencedDescriptor!= null){
-                    referencedDescriptor.referencingClasses.add(this);
+                    referencedDescriptor.addDescriptor(this);
                 }
             }
 
             if (mapping.isAggregateObjectMapping()) {
                 ClassDescriptor referencedDescriptor = ((AggregateObjectMapping)mapping).getReferenceDescriptor();
                 if (referencedDescriptor!= null){
-                    referencedDescriptor.referencingClasses.add(this);
+                    referencedDescriptor.addDescriptor(this);
                 }
             }
             // If this descriptor uses a cascaded version optimistic locking
@@ -6980,4 +6982,8 @@ public class ClassDescriptor extends CoreDescriptor<AttributeGroup, DescriptorEv
     public void clearReferencingClasses() {
         this.referencingClasses.clear();
     }
+    private void addDescriptor(ClassDescriptor cd) {
+    	referencingClasses.add(cd);
+    }
+	
 }
